@@ -20,12 +20,76 @@
       </p>
       <p>
         <input type="submit" name="" value="Entrar">
-        <input type="reset" name="" value="Cambiar de usuario">
+        <input type="reset" name="" value="Cambiar de usuario" id="reset_user">
       </p>
     </form>
     <div id="panel_password" class="oculto">
       <input type="text" name="nueva" placeholder="Introduzca la nueva contraseña">
       <button type="button" name="" id="cambiar_password">Cambiar</button>
     </div>
+
+  <script>
+    // const form = document.querySelector('form');
+    const form = document.forms[0];
+
+    form.addEventListener('submit', (e) => {
+      //e.preventDefault();
+      console.log(form.login.value);
+      localStorage.user = form.login.value;
+      sessionStorage.password = form.password.value;
+      //form.login.value = '';
+      //form.password.value = '';
+      form.login.remove();
+      form.password.remove();
+      //form.submit();
+    })
+
+    function onload() {
+      //form.login.value = localStorage.user || '';
+      //form.password.value = sessionStorage.password || '';
+      form.login.value = localStorage.getItem('user');
+      form.password.value = sessionStorage.getItem('password');
+      if (localStorage.user && sessionStorage.password) {
+        document.getElementById('panel_password').classList.remove('oculto');
+      }
+    }
+
+    document.getElementById('reset_user').addEventListener('click', () => {
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('password');
+      form.login.value = '';
+      form.password.value = '';
+      document.getElementById('panel_password').classList.add('oculto');
+    });
+
+    document.getElementById('cambiar_password').addEventListener('click', () => {
+      const user = form.login.value;
+      const nueva = document.querySelector('[name="nueva"]').value;
+      const data = {
+        "old": form.password.value,
+        "new": "5678"
+      }
+
+      const options = {
+        method: 'PUT',
+        header: {
+          'Content-Type': 'application-json'
+        },
+        body: JSON.stringify(data)
+      }
+      fetch('http://localhost:3000/api/usuario/' + user, options)
+      .then(res => {
+        if (res.status) {
+          successChange();
+        } else {
+          failChange();
+        }
+      });
+
+    });
+
+    onload();
+
+  </script>
   </body>
 </html>
