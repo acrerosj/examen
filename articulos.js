@@ -2,6 +2,8 @@ const bodyArticulos = document.querySelector('#articulos tbody');
 const form = document.getElementById('form_crear');
 
 let categorias;
+let storageCategories = [];
+let articulos = [];
 
 async function cargarCategorias() {
   try {
@@ -11,7 +13,8 @@ async function cargarCategorias() {
     }
 
     categorias = await response.json();
-    cargarArticulos();
+    cargarCategoriasAlmacenadas();
+    //cargarArticulos();
   } catch (e) {
     console.error('Error en el fetch de categorias: ' + e);
   }
@@ -57,14 +60,16 @@ function renderArticulo(articulo) {
   td.textContent = articulo.titulo;
   tr.append(td);
 
+  tr.addEventListener('click', () => alert(articulo.cuerpo));
+
   bodyArticulos.append(tr);
 }
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const articulo = {
-    "id_categoria": form.categoria.value,
-    "usuario": form.usuario.value,
+    "usuario": localStorage.user,
+    "password": sessionStorage.password,
     "titulo": form.titulo.value,
     "cuerpo": form.cuerpo.value
   }
@@ -78,7 +83,7 @@ form.addEventListener('submit', async (e) => {
   } 
   console.log(options); 
   try {
-    const response = await fetch('http://localhost:3000/api/articulo', options);
+    const response = await fetch('http://localhost:3000/api/categoria/'+form.categoria.value+'/articulo_secure', options);
     if (!response.ok) {
       throw new Error('Fallo http en el crear: ' + response.status);
     }
@@ -90,3 +95,22 @@ form.addEventListener('submit', async (e) => {
 })
 
 cargarCategorias();
+
+async function cargarCategoriasAlmacenadas() {
+  if (localStorage.categories) {
+    storageCategories = JSON.parse(localStorage.categories);
+  }
+  //storageCategories.forEach(id => await cargarArticulosDeCategoria(id));
+  for (let i=0; i<storageCategories.length; i++) {
+    await cargarArticulosDeCategoria(storageCategories[i]);
+  }
+  articulos.forEach(articulo => {
+    renderArticulo(articulo);
+  });
+}
+
+async function cargarArticulosDeCategoria(id) {
+  let res = await fetch('http://localhost:3000/api/categoria/'+id+'/articulo');
+  articulosNuevos = await(res.json());
+  articulosNuevos.forEach(a => articulos.push(a));
+}

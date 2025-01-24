@@ -31,6 +31,7 @@
   <script>
     // const form = document.querySelector('form');
     const form = document.forms[0];
+    const newPassword = document.querySelector('[name="nueva"]');
 
     form.addEventListener('submit', (e) => {
       //e.preventDefault();
@@ -64,22 +65,24 @@
 
     document.getElementById('cambiar_password').addEventListener('click', () => {
       const user = form.login.value;
-      const nueva = document.querySelector('[name="nueva"]').value;
+      const nueva = newPassword.value;
       const data = {
         "old": form.password.value,
-        "new": "5678"
+        "new": nueva
       }
 
       const options = {
         method: 'PUT',
-        header: {
-          'Content-Type': 'application-json'
+        headers: {
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
       }
+      console.log('http://localhost:3000/api/usuario/' + user);
+      console.log(JSON.stringify(data));
       fetch('http://localhost:3000/api/usuario/' + user, options)
       .then(res => {
-        if (res.status) {
+        if (res.ok) {
           successChange();
         } else {
           failChange();
@@ -87,6 +90,17 @@
       });
 
     });
+
+    function successChange() {
+      console.log("Exito en el cambio");
+      sessionStorage.password = newPassword.value;
+      form.password.value = newPassword.value;
+      document.getElementById('panel_password').classList.add('oculto');
+    }
+
+    function failChange() {
+      console.log('No se puedo realizar el cambio.');
+    }
 
     onload();
 
